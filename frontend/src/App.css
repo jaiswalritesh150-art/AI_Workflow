@@ -1,0 +1,265 @@
+.app-container {
+  min-height: 100vh;
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-card {
+  width: 100%;
+  max-width: 850px;
+  background: white;
+  border-radius: 24px;
+  padding: 45px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  border: 1px solid #e5e7eb;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 42px;
+  color: #111827;
+}
+
+.subtitle {
+  margin-top: 12px;
+  font-size: 17px;
+  color: #6b7280;
+}
+
+.input-section {
+  margin-top: 25px;
+}
+
+.input-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.question-input {
+  width: 100%;
+  min-height: 150px;
+  padding: 18px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  resize: vertical;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  color: #111827;
+  background: #fafafa;
+  transition: 0.2s;
+}
+
+.question-input:focus {
+  border-color: #6366f1;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.question-input::placeholder {
+  color: #9ca3af;
+}
+
+.input-footer {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-footer span {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.ask-button {
+  border: none;
+  border-radius: 10px;
+  padding: 13px 28px;
+  background: #111827;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.ask-button:hover:not(:disabled) {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.ask-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-box {
+  margin-top: 30px;
+  padding: 25px;
+  border-radius: 14px;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.loading-box p {
+  margin: 12px 0 0;
+  color: #6b7280;
+}
+
+.loader {
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border: 4px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-box {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.error-box p {
+  margin-bottom: 0;
+}
+
+.result-box {
+  margin-top: 35px;
+  padding: 25px;
+  border-radius: 18px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.result-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.intent-badge {
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.result-section {
+  margin-top: 20px;
+}
+
+.result-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.intent-display {
+  padding: 15px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.response-box {
+  padding: 18px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.footer {
+  margin-top: 25px;
+  display: flex;
+  gap: 8px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .app-container {
+    padding: 25px 15px;
+  }
+
+  .app-card {
+    padding: 25px 20px;
+    border-radius: 18px;
+  }
+
+  .header h1 {
+    font-size: 30px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .input-footer {
+    align-items: flex-end;
+    gap: 15px;
+  }
+
+  .ask-button {
+    padding: 12px 20px;
+  }
+
+  .result-header {
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
