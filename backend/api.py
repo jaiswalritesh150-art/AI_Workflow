@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
-import re
+
+from llm import ask_gemini
+
 
 app = FastAPI(title="AI Workflow Assistant API")
 
@@ -14,10 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+tasks = []
 
 class QuestionRequest(BaseModel):
     question: str
-
 
 @app.get("/")
 def home():
@@ -25,13 +27,11 @@ def home():
         "message": "AI Workflow Assistant API is running"
     }
 
-
 @app.get("/health")
 def health():
     return {
         "status": "healthy"
     }
-
 
 @app.post("/ask")
 def ask_question(request: QuestionRequest):
@@ -39,16 +39,15 @@ def ask_question(request: QuestionRequest):
     question = request.question.strip()
     text = question.lower()
 
-    # TASK WORKFLOW
     if any(word in text for word in [
-    "create task",
-    "create a task",
-    "add task",
-    "add a task",
-    "remind me",
-    "todo",
-    "to-do",
-    "schedule"
+        "create task",
+        "create a task",
+        "add task",
+        "add a task",
+        "remind me",
+        "todo",
+        "to-do",
+        "schedule"
     ]):
 
         priority = "Medium"
@@ -59,20 +58,28 @@ def ask_question(request: QuestionRequest):
         elif "low priority" in text:
             priority = "Low"
 
+
+        task = {
+            "task": question,
+            "priority": priority,
+            "created_at": datetime.now().strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "status": "Pending"
+        }
+
+
+        tasks.append(task)
+
+
         return {
             "intent": "task",
             "workflow": "task",
             "status": "success",
-            "message": "Task workflow selected successfully.",
-            "data": {
-                "task": question,
-                "priority": priority,
-                "created_at": datetime.now().strftime("%d %b %Y, %I:%M %p"),
-                "status": "Pending"
-            }
+            "message": "Task created successfully.",
+            "data": task
         }
 
-    # EMAIL WORKFLOW
     elif any(word in text for word in [
         "write email",
         "send email",
@@ -88,11 +95,15 @@ def ask_question(request: QuestionRequest):
             "message": "Email workflow selected successfully.",
             "data": {
                 "subject": "Professional Email",
-                "body": f"Hello,\n\nRegarding your request: {question}\n\nThank you."
+                "body": (
+                    f"Hello,\n\n"
+                    f"Regarding your request: {question}\n\n"
+                    f"Thank you."
+                )
             }
         }
 
-    # DOCUMENT / SUMMARY WORKFLOW
+
     elif any(word in text for word in [
         "summarize",
         "summary",
@@ -105,20 +116,50 @@ def ask_question(request: QuestionRequest):
             "intent": "document",
             "workflow": "document",
             "status": "success",
-            "message": "Document workflow selected. Document processing can be connected in the next version.",
+            "message": (
+                "Document workflow selected. "
+                "Document processing can be connected "
+                "in the next version."
+            ),
             "data": {
                 "action": "Document Summary"
             }
         }
 
-    # GENERAL WORKFLOW
+
+    # =================================================
+    # GENERAL AI WORKFLOW
+    # =================================================
+
     else:
-        return {
-            "intent": "general",
-            "workflow": "general",
-            "status": "success",
-            "message": "General AI workflow selected successfully.",
-            "data": {
-                "question": question
+
+        try:
+
+            ai_answer = ask_gemini(question)
+
+            return {
+                "intent": "general",
+                "workflow": "general",
+                "status": "success",
+                "message": "AI response generated successfully.",
+                "data": {
+                    "question": question,
+                    "answer": ai_answer
+                }
             }
-        }
+
+        except Exception as error:
+
+            print("Gemini Error:", error)
+
+            return {
+                "intent": "general",
+                "workflow": "general",
+                "status": "error",
+                "message": (
+                    "Unable to generate an AI response right now."
+                ),
+                "data": {
+                    "question": question
+                }
+            }

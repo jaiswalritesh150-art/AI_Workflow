@@ -1,16 +1,9 @@
-# ==========================================
-# AI WORKFLOW ROUTER
-# ==========================================
-
-
+from llm import ask_gemini
 def detect_intent(question: str):
 
     question = question.lower().strip()
 
-    # -----------------------------
     # TASK
-    # -----------------------------
-
     task_keywords = [
         "create a task",
         "create task",
@@ -27,10 +20,7 @@ def detect_intent(question: str):
         return "task"
 
 
-    # -----------------------------
     # DOCUMENT
-    # -----------------------------
-
     document_keywords = [
         "summarize",
         "summary",
@@ -44,10 +34,7 @@ def detect_intent(question: str):
         return "document"
 
 
-    # -----------------------------
     # EMAIL
-    # -----------------------------
-
     email_keywords = [
         "write an email",
         "send an email",
@@ -60,16 +47,8 @@ def detect_intent(question: str):
         return "email"
 
 
-    # -----------------------------
     # GENERAL
-    # -----------------------------
-
     return "general"
-
-
-# ==========================================
-# TASK WORKFLOW
-# ==========================================
 
 def create_task(question: str):
 
@@ -98,58 +77,71 @@ def create_task(question: str):
 
     return {
         "status": "created",
+        "workflow": "task",
         "title": task_text,
         "message": f"Task '{task_text}' created successfully."
     }
 
-
-# ==========================================
-# WORKFLOW ROUTER
-# ==========================================
-
 def route_request(question: str, intent: str):
 
-    # TASK WORKFLOW
 
     if intent == "task":
 
         return create_task(question)
 
 
-    # DOCUMENT WORKFLOW
-
     if intent == "document":
 
         return {
             "status": "selected",
             "workflow": "document",
-            "message": "Document workflow selected."
+            "message": "Document workflow selected.",
+            "data": {
+                "action": "Document Summary"
+            }
         }
-
-
-    # EMAIL WORKFLOW
 
     if intent == "email":
 
         return {
             "status": "selected",
             "workflow": "email",
-            "message": "Email workflow selected."
+            "message": "Email workflow selected.",
+            "data": {
+                "action": "Email Draft"
+            }
         }
-
-
-    # GENERAL WORKFLOW
 
     if intent == "general":
 
-        return {
-            "status": "selected",
-            "workflow": "general",
-            "message": "General AI workflow selected."
-        }
+        try:
 
+            answer = ask_gemini(question)
 
+            return {
+                "status": "success",
+                "workflow": "general",
+                "message": "AI response generated successfully.",
+                "data": {
+                    "question": question,
+                    "answer": answer
+                }
+            }
+
+        except Exception as error:
+
+            print("Gemini Error:", error)
+
+            return {
+                "status": "error",
+                "workflow": "general",
+                "message": "Unable to generate AI response.",
+                "data": {
+                    "question": question
+                }
+            }
     return {
         "status": "error",
+        "workflow": "unknown",
         "message": "Unknown workflow."
     }
