@@ -1074,3 +1074,236 @@ button {
   }
 }
 
+
+/* =========================================================
+   PDF UPLOAD AND DOCUMENT SUMMARY
+========================================================= */
+
+.pdf-upload-card {
+  max-width: 1050px;
+  margin: 24px auto 0;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.pdf-upload-heading {
+  margin: 0 0 7px;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 750;
+}
+
+.pdf-upload-description {
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.pdf-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  border: 2px dashed #c7d2fe;
+  border-radius: 14px;
+  background: #f8faff;
+  text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pdf-dropzone:hover {
+  border-color: #818cf8;
+  background: #f1f5ff;
+}
+
+.pdf-file-icon {
+  font-size: 32px;
+}
+
+.pdf-dropzone strong {
+  color: #374151;
+  font-size: 13px;
+}
+
+.pdf-dropzone span {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.pdf-file-input {
+  width: 100%;
+  max-width: 320px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.pdf-file-input::file-selector-button {
+  margin-right: 10px;
+  padding: 9px 12px;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pdf-selected-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid #e5e7eb;
+  border-radius: 11px;
+  background: #fafbfc;
+}
+
+.pdf-selected-file-icon {
+  font-size: 23px;
+}
+
+.pdf-selected-file-details {
+  min-width: 0;
+  flex: 1;
+}
+
+.pdf-selected-file-details strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #374151;
+  font-size: 12px;
+}
+
+.pdf-selected-file-details span {
+  display: block;
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+.pdf-upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.pdf-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 11px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pdf-upload-button:hover:not(:disabled) {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+
+.pdf-upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.document-summary {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.document-summary h3 {
+  margin: 0 0 15px;
+  color: #111827;
+  font-size: 16px;
+}
+
+.document-summary-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.document-summary-metadata span {
+  padding: 7px 10px;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.document-summary-content {
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.document-summary-content h1,
+.document-summary-content h2,
+.document-summary-content h3 {
+  margin: 18px 0 8px;
+  color: #111827;
+}
+
+.document-summary-content p {
+  margin: 10px 0;
+}
+
+.document-summary-content ul,
+.document-summary-content ol {
+  padding-left: 22px;
+}
+
+.document-summary-content li {
+  margin: 5px 0;
+}
+
+.document-summary-content pre {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f3f4f6;
+}
+
+@media (max-width: 560px) {
+  .pdf-upload-card {
+    padding: 16px;
+  }
+
+  .pdf-dropzone {
+    padding: 22px 12px;
+  }
+
+  .pdf-upload-actions {
+    justify-content: stretch;
+  }
+
+  .pdf-upload-button {
+    width: 100%;
+  }
+
+  .document-summary {
+    padding: 16px;
+  }
+}

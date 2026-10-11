@@ -1,9 +1,12 @@
+
+import time
+from datetime import datetime
+from io import BytesIO
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from datetime import datetime
 from pypdf import PdfReader
-from io import BytesIO
 
 from llm import ask_gemini, detect_intent
 
@@ -27,6 +30,33 @@ class QuestionRequest(BaseModel):
     question: str
 
 
+def generate_ai_response(prompt: str, workflow: str) -> str:
+    """Generate a Gemini response and log its duration."""
+
+    start_time = time.perf_counter()
+
+    try:
+        response = ask_gemini(prompt)
+        elapsed = time.perf_counter() - start_time
+
+        print(
+            f"[TIMING] Workflow={workflow}, "
+            f"Gemini response time={elapsed:.2f}s"
+        )
+
+        return response
+
+    except Exception as error:
+        elapsed = time.perf_counter() - start_time
+
+        print(
+            f"[ERROR] Workflow={workflow}, "
+            f"after {elapsed:.2f}s: {error}"
+        )
+
+        raise
+
+
 @app.get("/")
 def home():
     return {
@@ -44,6 +74,7 @@ def health():
 @app.post("/ask")
 def ask_question(request: QuestionRequest):
 
+    request_start = time.perf_counter()
     question = request.question.strip()
 
     if not question:
@@ -66,7 +97,6 @@ def ask_question(request: QuestionRequest):
     if workflow == "task":
 
         text = question.lower()
-
         priority = "Medium"
 
         if (
@@ -133,10 +163,7 @@ def ask_question(request: QuestionRequest):
         if not task_title:
             task_title = "New Task"
 
-        task_title = (
-            task_title[0].upper()
-            + task_title[1:]
-        )
+        task_title = task_title[0].upper() + task_title[1:]
 
         task = {
             "task": task_title,
@@ -149,33 +176,16 @@ def ask_question(request: QuestionRequest):
 
         tasks.append(task)
 
-        try:
-            ai_response = ask_gemini(
-                f"""
-The following task has just been created:
+        # No Gemini call needed for a simple confirmation.
+        ai_response = (
+            f"Task '{task_title}' created successfully. "
+            f"Priority: {priority}. Status: Pending."
+        )
 
-Task: {task_title}
-Priority: {priority}
-Status: Pending
-
-Give a short, natural and helpful confirmation
-to the user.
-
-Do not repeat the task as a list.
-Do not mention JSON.
-Keep it to 2-3 sentences.
-"""
-            )
-
-        except Exception as error:
-
-            print("Task Gemini Error:", error)
-
-            ai_response = (
-                f"I've created the task '{task_title}' "
-                f"with {priority} priority. "
-                f"The task is currently pending."
-            )
+        print(
+            f"[TIMING] Workflow=task, total time="
+            f"{time.perf_counter() - request_start:.3f}s"
+        )
 
         return {
             "intent": intent,
@@ -190,9 +200,7 @@ Keep it to 2-3 sentences.
 
     elif workflow == "email":
 
-        try:
-
-            email_prompt = f"""
+        email_prompt = f"""
 You are a professional email writing assistant.
 
 Create a clear, polite and professional email based
@@ -208,37 +216,45 @@ Subject: <email subject>
 <email body>
 
 Do not add explanations outside the email.
+Keep the email concise and useful.
 """
 
-            email_response = ask_gemini(email_prompt)
+        try:
+            email_response = generate_ai_response(
+                email_prompt, "email"
+            )
 
-            return {
+            result = {
                 "intent": intent,
                 "workflow": "email",
                 "status": "success",
-                "message": (
-                    "Professional email generated successfully."
-                ),
+                "message": "Professional email generated successfully.",
                 "data": {
                     "email": email_response
                 }
             }
 
-        except Exception as error:
-
-            print("Email Gemini Error:", error)
-
-            return {
+        except Exception:
+            result = {
                 "intent": "email",
                 "workflow": "email",
                 "status": "error",
-                "message": (
-                    "Unable to generate the email right now."
-                ),
+                "message": "Unable to generate the email right now. Please try again.",
                 "data": {}
             }
 
+        print(
+            f"[TIMING] Workflow=email, total time="
+            f"{time.perf_counter() - request_start:.2f}s"
+        )
+        return result
+
     elif workflow == "document":
+
+        print(
+            f"[TIMING] Workflow=document, total time="
+            f"{time.perf_counter() - request_start:.3f}s"
+        )
 
         return {
             "intent": intent,
@@ -256,46 +272,51 @@ Do not add explanations outside the email.
     else:
 
         try:
+            ai_answer = generate_ai_response(
+                question, "general"
+            )
 
-            ai_answer = ask_gemini(question)
-
-            return {
+            result = {
                 "intent": "general",
                 "workflow": "general",
                 "status": "success",
-                "message": (
-                    "AI response generated successfully."
-                ),
+                "message": "AI response generated successfully.",
                 "data": {
                     "question": question,
                     "answer": ai_answer
                 }
             }
 
-        except Exception as error:
-
-            print("Gemini Error:", error)
-
-            return {
+        except Exception:
+            result = {
                 "intent": "general",
                 "workflow": "general",
                 "status": "error",
                 "message": (
-                    "Unable to generate an AI response right now."
+                    "Unable to generate an AI response right now. "
+                    "Please try again shortly."
                 ),
                 "data": {
                     "question": question
                 }
             }
 
+        print(
+            f"[TIMING] Workflow=general, total time="
+            f"{time.perf_counter() - request_start:.2f}s"
+        )
+        return result
+
 
 @app.post("/document")
-async def process_document(
-    file: UploadFile = File(...)
-):
+async def process_document(file: UploadFile = File(...)):
 
-    if file.content_type != "application/pdf":
+    request_start = time.perf_counter()
 
+    if (
+        file.content_type != "application/pdf"
+        and not (file.filename or "").lower().endswith(".pdf")
+    ):
         return {
             "workflow": "document",
             "status": "error",
@@ -304,67 +325,54 @@ async def process_document(
         }
 
     try:
-
         file_bytes = await file.read()
 
-        pdf = PdfReader(
-            BytesIO(file_bytes)
-        )
-
-        extracted_text = ""
+        pdf = PdfReader(BytesIO(file_bytes))
+        extracted_pages = []
 
         for page in pdf.pages:
-
             page_text = page.extract_text()
-
             if page_text:
-                extracted_text += page_text + "\n"
+                extracted_pages.append(page_text)
 
-        extracted_text = extracted_text.strip()
+        extracted_text = "\n".join(extracted_pages).strip()
 
         if not extracted_text:
-
             return {
                 "workflow": "document",
                 "status": "error",
-                "message": (
-                    "No readable text was found in the PDF."
-                ),
+                "message": "No readable text was found in the PDF.",
                 "data": {}
             }
 
         max_chars = 30000
-
         document_text = extracted_text[:max_chars]
 
         summary_prompt = f"""
 You are an AI document summarization assistant.
 
-Read the following document and create a clear,
-easy-to-understand summary.
-
+Summarize this document clearly and concisely.
 Include:
-
 1. Main topic
 2. Key points
 3. Important information
 4. Short conclusion
 
-Keep the summary structured and useful for a student.
+Use headings and bullet points where helpful.
+Avoid unnecessary repetition.
 
 Document:
-
 {document_text}
 """
 
-        summary = ask_gemini(summary_prompt)
+        summary = generate_ai_response(
+            summary_prompt, "document"
+        )
 
-        return {
+        result = {
             "workflow": "document",
             "status": "success",
-            "message": (
-                "PDF processed and summarized successfully."
-            ),
+            "message": "PDF processed and summarized successfully.",
             "data": {
                 "filename": file.filename,
                 "pages": len(pdf.pages),
@@ -373,15 +381,25 @@ Document:
             }
         }
 
-    except Exception as error:
+        print(
+            f"[TIMING] Workflow=document, total time="
+            f"{time.perf_counter() - request_start:.2f}s"
+        )
 
-        print("Document Processing Error:", error)
+        return result
+
+    except Exception as error:
+        print(f"[ERROR] Document processing failed: {error}")
 
         return {
             "workflow": "document",
             "status": "error",
             "message": (
-                "Unable to process the PDF right now."
+                "Unable to process the PDF right now. "
+                "Please try again."
             ),
             "data": {}
         }
+
+    finally:
+        await file.close()
